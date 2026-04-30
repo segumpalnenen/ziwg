@@ -24,10 +24,11 @@ cleanup_residue() {
     rm -f /usr/local/bin/zivpn
     rm -f /usr/bin/zivpn
     
-    # Scripts in /usr/bin/
+    # Scripts in /usr/bin/ (both renamed and .sh versions)
     scripts=("add-zivpn" "del-zivpn" "cek-zivpn" "renew-zivpn" "menu-zivpn" "m-wg" "wg-add" "wg-del" "wg-renew" "wg-show" "ziwg")
     for script in "${scripts[@]}"; do
         rm -f "/usr/bin/$script"
+        rm -f "/usr/bin/$script.sh"
     done
 
     # Purge WireGuard package if exists

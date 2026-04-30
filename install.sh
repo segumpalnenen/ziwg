@@ -10,7 +10,7 @@ REPO="https://raw.githubusercontent.com/segumpalnenen/ziwg/main"
 
 # --- CLEANUP RESIDUE FUNCTION ---
 cleanup_residue() {
-    echo -e "${green}>>> Cleaning up old residue & conflicts...${nc}"
+    echo -e "${green}>>> Cleaning up old residue, binaries & conflicts...${nc}"
     
     # List of services to stop & disable
     services=("zivpn" "wg-quick@wg0")
@@ -19,19 +19,31 @@ cleanup_residue() {
         systemctl disable "$svc" >/dev/null 2>&1 || true
     done
 
-    # List of directories to remove
-    folders=("/etc/zivpn" "/etc/wireguard")
-    for folder in "${folders[@]}"; do
-        rm -rf "$folder"
-    done
-
-    # Cleanup binaries/scripts
-    scripts=("add-zivpn" "del-zivpn" "cek-zivpn" "renew-zivpn" "menu-zivpn" "zivpn" "m-wg" "wg-add" "wg-del" "wg-renew" "wg-show" "ziwg")
+    # Remove Binaries & Scripts
+    echo -e "${green} - Removing binaries and scripts...${nc}"
+    rm -f /usr/local/bin/zivpn
+    rm -f /usr/bin/zivpn
+    
+    # Scripts in /usr/bin/
+    scripts=("add-zivpn" "del-zivpn" "cek-zivpn" "renew-zivpn" "menu-zivpn" "m-wg" "wg-add" "wg-del" "wg-renew" "wg-show" "ziwg")
     for script in "${scripts[@]}"; do
         rm -f "/usr/bin/$script"
     done
+
+    # Purge WireGuard package if exists
+    if command -v wg &>/dev/null; then
+        echo -e "${green} - Purging WireGuard package...${nc}"
+        apt purge -y wireguard qrencode >/dev/null 2>&1 || true
+    fi
+
+    # List of directories to remove
+    echo -e "${green} - Removing configuration folders...${nc}"
+    folders=("/etc/zivpn" "/etc/wireguard" "/usr/local/etc/zivpn" "/var/lib/wireguard")
+    for folder in "${folders[@]}"; do
+        rm -rf "$folder"
+    done
     
-    echo -e "${green}[ OK ] Residue cleaned successfully.${nc}"
+    echo -e "${green}[ OK ] Residue and binaries cleaned successfully.${nc}"
 }
 
 # Root check

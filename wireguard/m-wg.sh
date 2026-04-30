@@ -219,7 +219,7 @@ main_menu() {
             r|R) reload_configuration; sleep 2 ;;
             l|L) view_service_logs ;;
             c|C) echo; grep -E "^(Address|ListenPort|#)" "$WG_CONF" | head -10; read -n 1 -s -r -p "Press any key..." ;;
-            0|x|X|q|Q) echo -e "${green}Goodbye! 👋${nc}"; exit 0 ;;
+            0|x|X|q|Q) menu; break ;;
             *) log_error "Invalid choice"; sleep 1 ;;
         esac
     done

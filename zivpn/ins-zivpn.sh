@@ -20,17 +20,8 @@ if [[ -z "$basedom" ]]; then read -rp "Enter Base Domain (e.g., example.com): " 
 if [[ -z "$subdom" ]]; then read -rp "Enter Subdomain for ZiVPN (e.g., zi1): " subdom; fi
 if [[ -z "$cf_token" ]]; then read -rp "Enter Cloudflare Token: " cf_token; fi
 
-# 2. DNS Pointing
-if [[ -f "./pointing.sh" ]]; then
-    bash ./pointing.sh "$subdom" "$basedom" "$cf_token"
-else
-    echo -e "${red}Error: pointing.sh not found! This script should be run via install.sh${nc}"
-    exit 1
-fi
-
+# 2. DNS Pointing - HANDLED BY MASTER SETUP
 domain="${subdom}.${basedom}"
-
-# 3. Preparation
 ZIVPN_DIR="/etc/zivpn"
 ZIVPN_BIN="/usr/local/bin/zivpn"
 mkdir -p "$ZIVPN_DIR"
@@ -64,6 +55,7 @@ if [[ ! -f "$ZIVPN_DIR/config.json" ]]; then
   "cert": "$ZIVPN_DIR/zivpn.crt",
   "key": "$ZIVPN_DIR/zivpn.key",
   "obfs": "zivpn",
+  "keepalive": 20,
   "auth": {
     "mode": "passwords",
     "config": ["zivpn"]
@@ -104,13 +96,16 @@ if [[ -n "$IFACE" ]]; then
     iptables -t nat -A PREROUTING -i "$IFACE" -p udp --dport 10000:30000 -j DNAT --to-destination :5667 2>/dev/null || true
 fi
 
+# REPO
+REPO="https://raw.githubusercontent.com/segumpalnenen/ziwg/main"
+
 # 9. Install Command Scripts FROM GITHUB
 echo -e "[ INFO ] Installing command scripts from GitHub..."
 commands=("add-zivpn" "del-zivpn" "cek-zivpn" "renew-zivpn" "menu-zivpn")
 
 for cmd in "${commands[@]}"; do
     echo -e " - Downloading $cmd..."
-    wget -O "/usr/bin/$cmd" "$REPO/zivpn/$cmd.sh"
+    wget -q -O "/usr/bin/$cmd" "${REPO}/zivpn/${cmd}.sh"
     chmod +x "/usr/bin/$cmd"
 done
 ln -sf /usr/bin/menu-zivpn /usr/bin/zivpn

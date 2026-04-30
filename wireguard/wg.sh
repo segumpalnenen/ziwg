@@ -31,14 +31,7 @@ if [[ -z "$basedom" ]]; then read -rp "Enter Base Domain (e.g., example.com): " 
 if [[ -z "$subdom" ]]; then read -rp "Enter Subdomain for WireGuard (e.g., wg1): " subdom; fi
 if [[ -z "$cf_token" ]]; then read -rp "Enter Cloudflare Token: " cf_token; fi
 
-# === DNS POINTING ===
-if [[ -f "./pointing.sh" ]]; then
-    bash ./pointing.sh "$subdom" "$basedom" "$cf_token"
-else
-    log_error "pointing.sh not found! This script should be run via install.sh"
-    exit 1
-fi
-
+# === DNS POINTING - HANDLED BY MASTER SETUP ===
 domain="${subdom}.${basedom}"
 mkdir -p /etc/wireguard
 echo "$domain" > /etc/wireguard/domain
@@ -93,12 +86,15 @@ systemctl daemon-reload
 systemctl enable wg-quick@wg0.service >/dev/null 2>&1
 systemctl restart wg-quick@wg0.service
 
-# === DOWNLOAD MANAGEMENT SCRIPTS FROM GITHUB (ALWAYS GITHUB) ===
-log_info "Downloading management scripts from GitHub..."
+# REPO
+REPO="https://raw.githubusercontent.com/segumpalnenen/ziwg/main"
+
+# === INSTALL MANAGEMENT SCRIPTS FROM GITHUB ===
+log_info "Installing management scripts from GitHub..."
 scripts=("m-wg" "wg-add" "wg-del" "wg-renew" "wg-show")
 
 for script in "${scripts[@]}"; do
-    if wget -q -O "/usr/bin/$script" "$REPO/wireguard/${script}.sh"; then
+    if wget -q -O "/usr/bin/$script" "${REPO}/wireguard/${script}.sh"; then
         chmod +x "/usr/bin/$script"
         log_info "Installed: /usr/bin/$script"
     else

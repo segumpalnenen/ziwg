@@ -96,16 +96,16 @@ log_info "Assigned IP: $client_ip"
 
 # ---------- Server Info ----------
 log_info "Retrieving server information..."
-server_ip=$(cat /etc/wireguard/domain 2>/dev/null || curl -s -4 ipv4.icanhazip.com || curl -s -4 ifconfig.me || curl -s -4 icanhazip.com)
-server_ip=$(echo "$server_ip" | tr -d '\r')
+server_host=$(cat /etc/wireguard/domain 2>/dev/null || curl -s -4 ipv4.icanhazip.com || curl -s -4 ifconfig.me || curl -s -4 icanhazip.com)
+server_host=$(echo "$server_host" | tr -d '\r')
 server_port=$(grep -m1 ListenPort /etc/wireguard/wg0.conf | awk '{print $3}')
 server_pubkey=$(wg show wg0 | awk '/public key/ {print $3; exit}')
 
-if [[ -z "$server_ip" ]]; then
-  log_warn "Could not detect public IP automatically"
-  read -rp "Please enter server public IP: " server_ip
-  if [[ -z "$server_ip" ]]; then
-    log_error "Server IP is required"
+if [[ -z "$server_host" ]]; then
+  log_warn "Could not detect public host automatically"
+  read -rp "Please enter server domain or IP: " server_host
+  if [[ -z "$server_host" ]]; then
+    log_error "Server Host is required"
     exit 1
   fi
 fi
@@ -142,7 +142,7 @@ DNS = 1.1.1.1,8.8.8.8,9.9.9.9
 [Peer]
 PublicKey = $server_pubkey
 PresharedKey = $psk
-Endpoint = $server_domain:$server_port
+Endpoint = $server_host:$server_port
 AllowedIPs = 0.0.0.0/0
 PersistentKeepalive = 25
 EOF
@@ -176,7 +176,7 @@ echo -e "${green}=========================================${nc}"
 log_success "WireGuard user '$user' created successfully!"
 echo "👤 Username   : $user"
 echo "📍 Client IP  : $client_ip"
-echo "🌍 Endpoint   : $server_ip:$server_port"
+echo "🌍 Endpoint   : $server_host:$server_port"
 echo "📁 Config file: $client_config"
 echo -e "${green}=========================================${nc}"
 echo
@@ -208,14 +208,9 @@ chmod 600 /var/log/wireguard/user-creation.log
 log_info "To revoke this user, run: wg-del $user"
 log_info "To show all users, run: wg-show"
 
-# ---------- Return to Menu ----------
+# ---------- Pause if Interactive ----------
 if [[ "$is_interactive" == "true" ]]; then
-    if command -v m-wg >/dev/null 2>&1; then
-      read -n 1 -s -r -p "Press any key to return to menu..."
-      clear
-      m-wg
-    fi
-fi
-  m-wg
-    fi
+    echo
+    read -n 1 -s -r -p "Press any key to return..."
+    echo
 fi

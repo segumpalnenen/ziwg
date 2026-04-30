@@ -209,10 +209,10 @@ main_menu() {
         read -rp "Select option: " opt
 
         case "$opt" in
-            1) command -v wg-add &>/dev/null && wg-add || log_error "wg-add not found" ;;
-            2) command -v wg-del &>/dev/null && wg-del || log_error "wg-del not found" ;;
-            3) command -v wg-show &>/dev/null && wg-show || log_error "wg-show not found" ;;
-            4) command -v wg-renew &>/dev/null && wg-renew || log_error "wg-renew not found" ;;
+            1) if command -v wg-add &>/dev/null; then wg-add; else log_error "wg-add not found"; fi ;;
+            2) if command -v wg-del &>/dev/null; then wg-del; else log_error "wg-del not found"; fi ;;
+            3) if command -v wg-show &>/dev/null; then wg-show; else log_error "wg-show not found"; fi ;;
+            4) if command -v wg-renew &>/dev/null; then wg-renew; else log_error "wg-renew not found"; fi ;;
             5) systemctl restart wg-quick@wg0 && log_success "Service restarted" || log_error "Restart failed"; sleep 2 ;;
             6) config_check; read -n 1 -s -r -p "Press any key..." ;;
             a|A) quick_add_user; read -n 1 -s -r -p "Press any key..." ;;

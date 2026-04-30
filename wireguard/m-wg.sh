@@ -138,12 +138,41 @@ config_check() {
     echo -e "${yellow}🔧 Configuration Check:${nc}"
     echo -e "${red}-----------------------------------------${nc}"
     local ok=0 total=4
-    [[ -f "$WG_CONF" ]] && { echo -e " ✅ Config file: $WG_CONF"; ((ok++)); } || echo " ❌ Missing config"
-    [[ -d "$CLIENT_DIR" ]] && { echo -e " ✅ Client dir: $CLIENT_DIR"; ((ok++)); } || echo " ❌ Missing clients folder"
-    [[ "$(sysctl -n net.ipv4.ip_forward)" == "1" ]] && { echo " ✅ IP forwarding enabled"; ((ok++)); } || echo " ❌ IP forwarding disabled"
-    systemctl is-enabled wg-quick@wg0 &>/dev/null && { echo " ✅ Service enabled at boot"; ((ok++)); } || echo " ❌ Service not enabled"
+    
+    if [[ -f "$WG_CONF" ]]; then
+        echo -e " ✅ Config file: $WG_CONF"
+        ((ok++))
+    else
+        echo " ❌ Missing config"
+    fi
+
+    if [[ -d "$CLIENT_DIR" ]]; then
+        echo -e " ✅ Client dir: $CLIENT_DIR"
+        ((ok++))
+    else
+        echo " ❌ Missing clients folder"
+    fi
+
+    if [[ "$(sysctl -n net.ipv4.ip_forward)" == "1" ]]; then
+        echo " ✅ IP forwarding enabled"
+        ((ok++))
+    else
+        echo " ❌ IP forwarding disabled"
+    fi
+
+    if systemctl is-enabled wg-quick@wg0 &>/dev/null; then
+        echo " ✅ Service enabled at boot"
+        ((ok++))
+    else
+        echo " ❌ Service not enabled"
+    fi
+
     echo -e "${red}-----------------------------------------${nc}"
-    [[ $ok -eq $total ]] && log_success "All checks passed!" || log_warn "$ok/$total checks passed."
+    if [[ $ok -eq $total ]]; then
+        log_success "All checks passed!"
+    else
+        log_warn "$ok/$total checks passed."
+    fi
 }
 
 # ---------- Main Menu ----------

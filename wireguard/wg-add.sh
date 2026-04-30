@@ -199,7 +199,7 @@ chmod 700 /var/log/wireguard
 {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Created: $user ($client_ip)"
   echo "PublicKey: $pub_key"
-  echo "Endpoint: $server_ip:$server_port"
+  echo "Endpoint: $server_host:$server_port"
   echo "---"
 } >> /var/log/wireguard/user-creation.log
 chmod 600 /var/log/wireguard/user-creation.log
@@ -214,5 +214,8 @@ if [[ "$is_interactive" == "true" ]]; then
       read -n 1 -s -r -p "Press any key to return to menu..."
       clear
       m-wg
+    fi
+fi
+  m-wg
     fi
 fi

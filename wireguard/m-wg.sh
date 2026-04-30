@@ -35,8 +35,12 @@ check_wireguard_status() {
     fi
 
     if ip link show wg0 &>/dev/null; then
-        [[ $(cat /sys/class/net/wg0/operstate 2>/dev/null) == "up" ]] && \
-            interface_status="${green}UP${nc}" || interface_status="${yellow}DOWN${nc}"
+        # Check if the interface is technically "up" even if operstate is unknown
+        if ip addr show wg0 | grep -q "UP"; then
+            interface_status="${green}UP${nc}"
+        else
+            interface_status="${yellow}DOWN${nc}"
+        fi
     else
         interface_status="${red}MISSING${nc}"
     fi
@@ -46,12 +50,13 @@ check_wireguard_status() {
 
 # ---------- Server Info ----------
 get_server_info() {
-    local ip port pubkey
-    ip=$(curl -s -4 ipv4.icanhazip.com || curl -s -4 ifconfig.me || echo "Unknown")
+    local host port pubkey
+    # Prefer domain from file, fallback to IP
+    host=$(cat /etc/wireguard/domain 2>/dev/null || curl -s -4 icanhazip.com || echo "Unknown")
     port=$(grep -m1 "^ListenPort" "$WG_CONF" 2>/dev/null | awk '{print $3}')
     privkey=$(grep -m1 "^PrivateKey" "$WG_CONF" 2>/dev/null | awk '{print $3}')
     pubkey=$( [[ -n "$privkey" ]] && echo "$privkey" | wg pubkey 2>/dev/null || echo "Unknown" )
-    echo "$ip|${port:-Unknown}|$pubkey"
+    echo "$host|${port:-Unknown}|$pubkey"
 }
 
 # ---------- User Stats ----------

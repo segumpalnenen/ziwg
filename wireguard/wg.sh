@@ -53,6 +53,7 @@ interface=$(ip -o link show | awk -F': ' '{print $2}' | grep -v lo | head -n1)
 
 # === CREATE CONFIG DIRECTORY ===
 mkdir -p /etc/wireguard
+mkdir -p /etc/wireguard/clients
 chmod 700 /etc/wireguard
 
 # === GENERATE SERVER KEYS ===

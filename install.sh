@@ -8,6 +8,32 @@ green='\e[0;32m'; red='\e[1;31m'; nc='\e[0m'
 # Configuration
 REPO="https://raw.githubusercontent.com/segumpalnenen/ziwg/main"
 
+# --- CLEANUP RESIDUE FUNCTION ---
+cleanup_residue() {
+    echo -e "${green}>>> Cleaning up old residue & conflicts...${nc}"
+    
+    # List of services to stop & disable
+    services=("zivpn" "wg-quick@wg0")
+    for svc in "${services[@]}"; do
+        systemctl stop "$svc" >/dev/null 2>&1 || true
+        systemctl disable "$svc" >/dev/null 2>&1 || true
+    done
+
+    # List of directories to remove
+    folders=("/etc/zivpn" "/etc/wireguard")
+    for folder in "${folders[@]}"; do
+        rm -rf "$folder"
+    done
+
+    # Cleanup binaries/scripts
+    scripts=("add-zivpn" "del-zivpn" "cek-zivpn" "renew-zivpn" "menu-zivpn" "zivpn" "m-wg" "wg-add" "wg-del" "wg-renew" "wg-show" "ziwg")
+    for script in "${scripts[@]}"; do
+        rm -f "/usr/bin/$script"
+    done
+    
+    echo -e "${green}[ OK ] Residue cleaned successfully.${nc}"
+}
+
 # Root check
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root!"
@@ -32,12 +58,15 @@ read -rp "Enter Subdomain for WireGuard (e.g., wg): " wg_sub
 read -rp "Enter Subdomain for ZiVPN (e.g., zi): " zi_sub
 echo -e "${green}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${nc}"
 
-# 2. Download Pointing Script (Temporary)
-echo -e ">>> Fetching DNS Pointing tools..."
+# 2. Cleanup Old Residue
+cleanup_residue
+
+# 3. Prepare Environment
+echo -e ">>> Preparing Environment..."
 wget -q -O pointing.sh "$REPO/pointing.sh"
 chmod +x pointing.sh
 
-# 3. Install WireGuard
+# 4. Install WireGuard
 echo -e ">>> Installing WireGuard..."
 wget -q -O wg.sh "$REPO/wireguard/wg.sh"
 chmod +x wg.sh
@@ -46,14 +75,14 @@ rm -f wg.sh
 
 echo -e "---------------------------------------------------"
 
-# 4. Install ZiVPN
+# 5. Install ZiVPN
 echo -e ">>> Installing ZiVPN..."
 wget -q -O ins-zivpn.sh "$REPO/zivpn/ins-zivpn.sh"
 chmod +x ins-zivpn.sh
 bash ins-zivpn.sh "$basedom" "$zi_sub" "$cf_token"
 rm -f ins-zivpn.sh
 
-# 5. Install Master Menu
+# 6. Install Master Menu
 echo -e ">>> Installing Master Menu 'ziwg'..."
 wget -q -O /usr/bin/ziwg "$REPO/ziwg.sh"
 chmod +x /usr/bin/ziwg

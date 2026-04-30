@@ -40,9 +40,9 @@ systemctl stop zivpn.service > /dev/null 2>&1
 # 4. Download Binary
 ARCH=$(uname -m)
 if [[ "$ARCH" == "x86_64" ]]; then
-    BINARY_URL="https://github.com/zahidbd2/udp-zivpn/releases/download/udp-zivpn_1.4.9/udp-zivpn-linux-amd64"
+    BINARY_URL="https://github.com/rosicenterstore/UDP-ZIVPN/releases/download/v1.0/udp-zivpn-linux-amd64"
 else
-    BINARY_URL="https://github.com/zahidbd2/udp-zivpn/releases/download/udp-zivpn_1.4.9/udp-zivpn-linux-arm64"
+    BINARY_URL="https://github.com/rosicenterstore/UDP-ZIVPN/releases/download/v1.0/udp-zivpn-linux-arm64"
 fi
 
 echo -e "[ INFO ] Downloading Zivpn binary..."
